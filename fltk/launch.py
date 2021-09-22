@@ -13,6 +13,7 @@ from fltk.util.cluster.client import ClusterManager
 from fltk.util.config.arguments import LearningParameters
 from fltk.util.config.base_config import BareConfig
 from fltk.util.task.generator.arrival_generator import ExperimentGenerator
+from fltk.util.task.generator.multi_group_arrival_generator import MultiGroupArrivalGenerator
 
 
 def should_distribute() -> bool:
@@ -79,7 +80,10 @@ def launch_orchestrator(args: Namespace = None, conf: BareConfig = None):
         conf.cluster_config.load_incluster_namespace()
         conf.cluster_config.load_incluster_image()
 
-    arrival_generator = ExperimentGenerator()
+    # TODO change for testing purposes
+    # arrival_generator = ExperimentGenerator()
+    arrival_generator = MultiGroupArrivalGenerator()
+
     cluster_manager = ClusterManager()
 
     orchestrator = Orchestrator(cluster_manager, arrival_generator, conf)

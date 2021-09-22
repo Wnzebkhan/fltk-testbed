@@ -8,6 +8,7 @@ from kubeflow.pytorchjob import PyTorchJobClient
 from kubeflow.pytorchjob.constants.constants import PYTORCHJOB_GROUP, PYTORCHJOB_VERSION, PYTORCHJOB_PLURAL
 from kubernetes import client
 
+from fltk.job_prediction.workload_predictor import JobWorkloadPredictor
 from fltk.util.cluster.client import construct_job, ClusterManager
 from fltk.util.config.base_config import BareConfig
 from fltk.util.task.generator.arrival_generator import ArrivalGenerator, Arrival
@@ -46,6 +47,8 @@ class Orchestrator(object):
         # API to interact with the cluster.
         self.__client = PyTorchJobClient()
 
+        self.workload_predictor = JobWorkloadPredictor()
+
     def stop(self) -> None:
         """
         Stop the Orchestrator.
@@ -82,6 +85,9 @@ class Orchestrator(object):
                                    sys_conf=arrival.get_system_config(),
                                    param_conf=arrival.get_parameter_config())
 
+                # TODO use this in the scheduler
+                predicted_length = self.workload_predictor.predict_length(task)
+
                 self.__logger.debug(f"Arrival of: {task}")
                 self.pending_tasks.put(task)
 
@@ -94,7 +100,12 @@ class Orchestrator(object):
 
                 # Hack to overcome limitation of KubeFlow version (Made for older version of Kubernetes)
                 self.__logger.info(f"Deploying on cluster: {curr_task.id}")
-                self.__client.create(job_to_start, namespace=self._config.cluster_config.namespace)
+
+                outputs = self.__client.create(job_to_start, namespace=self._config.cluster_config.namespace)
+                # TODO no clue what outputs contains since i could not run it but i assume it contains some kind of timing sooooo
+                self.workload_predictor.feedback(curr_task, outputs['timing'])
+
+
                 self.deployed_tasks.append(curr_task)
 
                 # TODO: Extend this logic in your real project, this is only meant for demo purposes

@@ -1,70 +1,18 @@
 import logging
 import multiprocessing
+import random
 import time
-from abc import abstractmethod
-from dataclasses import dataclass
 from pathlib import Path
-from queue import Queue
 from random import choices
 from typing import Dict, List, Union
 
 import numpy as np
 
-from fltk.util.singleton import Singleton
 from fltk.util.task.config.parameter import TrainTask, JobDescription, ExperimentParser, JobClassParameter
+from fltk.util.task.generator.arrival_generator import ArrivalGenerator, Arrival
 
 
-@dataclass
-class ArrivalGenerator(metaclass=Singleton):
-    """
-    Abstract Base Class for generating arrivals in the system. These tasks must be run
-    """
-
-    configuration_path: Path
-    logger: logging.Logger = None
-    arrivals: "Queue[Arrival]" = Queue()
-
-    @abstractmethod
-    def load_config(self):
-        raise NotImplementedError("Cannot call abstract function")
-
-    @abstractmethod
-    def generate_arrival(self, task_id):
-        """
-        Function to generate arrival based on a Task ID.
-        @param task_id:
-        @type task_id:
-        @return:
-        @rtype:
-        """
-        raise NotImplementedError("Cannot call abstract function")
-
-
-@dataclass
-class Arrival:
-    ticks: int
-    task: TrainTask
-    task_id: str
-
-    group_id: str
-
-    def get_priority(self):
-        return self.task.priority
-
-    def get_network(self) -> str:
-        return self.task.network_configuration.network
-
-    def get_dataset(self) -> str:
-        return self.task.network_configuration.dataset
-
-    def get_system_config(self):
-        return self.task.system_parameters
-
-    def get_parameter_config(self):
-        return self.task.hyper_parameters
-
-
-class ExperimentGenerator(ArrivalGenerator):
+class MultiGroupArrivalGenerator(ArrivalGenerator):
     start_time: float = -1
     stop_time: float = -1
     job_dict: Dict[str, JobDescription] = None
@@ -75,7 +23,7 @@ class ExperimentGenerator(ArrivalGenerator):
     __default_config: Path = Path('configs/tasks/example_arrival_config.json')
 
     def __init__(self, custom_config: Path = None):
-        super(ExperimentGenerator, self).__init__(custom_config or self.__default_config)
+        super(MultiGroupArrivalGenerator, self).__init__(custom_config or self.__default_config)
         self.load_config()
 
     def set_logger(self, name: str = None):
@@ -118,7 +66,11 @@ class ExperimentGenerator(ArrivalGenerator):
         inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)
         train_task = TrainTask(task_id, parameters, priority)
 
-        return Arrival(inter_arrival_ticks, train_task, task_id)
+        # TODO maybe this should be done in another way
+        # randomly pick a group
+        group = ["group_0", "group_1", "group_3"][np.random.randint(0, 3)]
+
+        return Arrival(inter_arrival_ticks, train_task, task_id, group)
 
     def start(self, duration: Union[float, int]):
         """

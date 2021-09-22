@@ -23,6 +23,8 @@ def __main__():
     arguments = parser.parse_args()
 
     with open(arguments.config, 'r') as config_file:
+        # print(config_file)
+        # print(json.load(config_file))
         config: BareConfig = BareConfig.from_dict(json.load(config_file))
         config.config_path = Path(arguments.config)
 
