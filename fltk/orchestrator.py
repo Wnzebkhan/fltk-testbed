@@ -9,6 +9,7 @@ from kubeflow.pytorchjob.constants.constants import PYTORCHJOB_GROUP, PYTORCHJOB
 from kubernetes import client
 
 from fltk.job_prediction.workload_predictor import JobWorkloadPredictor
+from fltk.schedulers.schedule import Schedule
 from fltk.util.cluster.client import construct_job, ClusterManager
 from fltk.util.config.base_config import BareConfig
 from fltk.util.task.generator.arrival_generator import ArrivalGenerator, Arrival
@@ -32,10 +33,6 @@ class Orchestrator(object):
     which containers where.
     """
     _alive = False
-    # Priority queue, requires an orderable object, otherwise a Tuple[int, Any] can be used to insert.
-    pending_tasks: "PriorityQueue[ArrivalTask]" = PriorityQueue()
-    deployed_tasks: List[ArrivalTask] = []
-    completed_tasks: List[str] = []
 
     def __init__(self, cluster_mgr: ClusterManager, arv_gen: ArrivalGenerator, config: BareConfig):
         self.__logger = logging.getLogger('Orchestrator')
@@ -48,6 +45,7 @@ class Orchestrator(object):
         self.__client = PyTorchJobClient()
 
         self.workload_predictor = JobWorkloadPredictor()
+        self.schedule = Schedule(self.__client, self._config, self.workload_predictor)
 
     def stop(self) -> None:
         """
@@ -83,41 +81,28 @@ class Orchestrator(object):
                                    network=arrival.get_network(),
                                    dataset=arrival.get_dataset(),
                                    sys_conf=arrival.get_system_config(),
-                                   param_conf=arrival.get_parameter_config())
+                                   param_conf=arrival.get_parameter_config(),
+                                   group_id=arrival.group_id,
+                                   created=round(time.time() * 1000))
 
-                # TODO use this in the scheduler
-                predicted_length = self.workload_predictor.predict_length(task)
+                # Set the predicted length
+                task.predicted_length = self.workload_predictor.predict_length(task)
 
                 self.__logger.debug(f"Arrival of: {task}")
-                self.pending_tasks.put(task)
+                self.schedule.pending_tasks.put(task)
 
-            while not self.pending_tasks.empty():
-                # Do blocking request to priority queue
-                curr_task = self.pending_tasks.get()
-                self.__logger.info(f"Scheduling arrival of Arrival: {curr_task.id}")
-                job_to_start = construct_job(self._config, curr_task)
+            self.schedule.reschedule()
 
+            self.schedule.deploy_tasks()
 
-                # Hack to overcome limitation of KubeFlow version (Made for older version of Kubernetes)
-                self.__logger.info(f"Deploying on cluster: {curr_task.id}")
-
-                outputs = self.__client.create(job_to_start, namespace=self._config.cluster_config.namespace)
-                # TODO no clue what outputs contains since i could not run it but i assume it contains some kind of timing sooooo
-                self.workload_predictor.feedback(curr_task, outputs['timing'])
-
-
-                self.deployed_tasks.append(curr_task)
-
-                # TODO: Extend this logic in your real project, this is only meant for demo purposes
-                # For now we exit the thread after scheduling a single task.
-
-                self.stop()
-                return
+            self.schedule.check_completed()
 
             self.__logger.debug("Still alive...")
-            time.sleep(5)
+            time.sleep(1)
 
         logging.info(f'Experiment completed, currently does not support waiting.')
+        self.stop()
+        return
 
     def __clear_jobs(self):
         """

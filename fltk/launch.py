@@ -82,7 +82,7 @@ def launch_orchestrator(args: Namespace = None, conf: BareConfig = None):
 
     # TODO change for testing purposes
     # arrival_generator = ExperimentGenerator()
-    arrival_generator = MultiGroupArrivalGenerator()
+    arrival_generator = MultiGroupArrivalGenerator(conf)
 
     cluster_manager = ClusterManager()
 

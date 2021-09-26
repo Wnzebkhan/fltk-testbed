@@ -31,9 +31,9 @@ class Priority:
     priority: int
     probability: float
 
-
+# TODO i removed (frozen=True) here not sure if thats problamatic
 @dataclass_json
-@dataclass(frozen=True)
+@dataclass
 class SystemParameters:
     """
     System parameters to spawn pods with.

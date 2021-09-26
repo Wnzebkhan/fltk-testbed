@@ -65,6 +65,15 @@ class ExecutionConfig:
     data_path = "data"
     log_path = "logging"
 
+@dataclass_json
+@dataclass
+class ExperimentConfig:
+    memory_per_job: int
+    cpu_per_job: int
+    number_of_groups: int
+    number_of_jobs_per_group: int
+    scheduler: str
+
 
 @dataclass_json
 @dataclass
@@ -113,8 +122,10 @@ class ClusterConfig:
 @dataclass
 class BareConfig(object):
     execution_config: ExecutionConfig
+    experiment: ExperimentConfig
     cluster_config: ClusterConfig = field(metadata=config(field_name="cluster"))
     config_path: Path = None
+
 
     def get_duration(self) -> int:
         """

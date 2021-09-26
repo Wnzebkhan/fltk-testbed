@@ -1,6 +1,5 @@
 import logging
 import multiprocessing
-import random
 import time
 from pathlib import Path
 from random import choices
@@ -8,6 +7,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 
+from fltk.util.config import BareConfig
 from fltk.util.task.config.parameter import TrainTask, JobDescription, ExperimentParser, JobClassParameter
 from fltk.util.task.generator.arrival_generator import ArrivalGenerator, Arrival
 
@@ -22,9 +22,11 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
     _decrement = 10
     __default_config: Path = Path('configs/tasks/example_arrival_config.json')
 
-    def __init__(self, custom_config: Path = None):
+    def __init__(self, config: BareConfig, custom_config: Path = None):
         super(MultiGroupArrivalGenerator, self).__init__(custom_config or self.__default_config)
+        self.__config = config
         self.load_config()
+        self.jobs_per_group = dict()
 
     def set_logger(self, name: str = None):
         """
@@ -48,7 +50,11 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         """
         parser = ExperimentParser(config_path=alternative_path or self.configuration_path)
         experiment_descriptions = parser.parse()
-        self.job_dict = {f'train_job_{indx}': item for indx, item in enumerate(experiment_descriptions)}
+        self.job_dict = {}
+        total_jobs = self.__config.experiment.number_of_jobs_per_group * self.__config.experiment.number_of_groups
+        for i in range(total_jobs):
+            random_experiment_description = experiment_descriptions[np.random.randint(0, len(experiment_descriptions))]
+            self.job_dict[f'train_job_{i}'] = random_experiment_description
 
     def generate_arrival(self, task_id: str) -> Arrival:
         """
@@ -63,12 +69,22 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         parameters: JobClassParameter = choices(job.job_class_parameters, [param.class_probability for param in job.job_class_parameters])[0]
         priority = choices(parameters.priorities, [prio.probability for prio in parameters.priorities], k=1)[0]
 
+        # parameters.hyper_parameters
+        parameters.system_parameters.executor_memory = f"{(self.__config.experiment.memory_per_job / 100) * 2000}Mi"
+        parameters.system_parameters.executor_cores = f"{(self.__config.experiment.cpu_per_job / 100) * 1000}m"
+
+
         inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)
         train_task = TrainTask(task_id, parameters, priority)
 
-        # TODO maybe this should be done in another way
         # randomly pick a group
-        group = ["group_0", "group_1", "group_3"][np.random.randint(0, 3)]
+        group = np.random.randint(0, self.__config.experiment.number_of_groups)
+
+        while self.jobs_per_group[group] > self.__config.experiment.number_of_jobs_per_group:
+            # TODO this can be done smarter
+            group = np.random.randint(0, self.__config.experiment.number_of_groups)
+
+        group = f"group_{group}"
 
         return Arrival(inter_arrival_ticks, train_task, task_id, group)
 

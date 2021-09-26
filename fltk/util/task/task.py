@@ -14,9 +14,15 @@ class ArrivalTask:
         * Dataset
         * Hyper-parameters
     """
-    priority: int
     id: UUID = field(compare=False)
     network: str = field(compare=False)
     dataset: str = field(compare=False)
     sys_conf: SystemParameters = field(compare=False)
     param_conf: HyperParameters = field(compare=False)
+    created: int = field(compare=False)
+
+    group_id: str = field(compare=False)
+    started: int = field(init=False, compare=False)
+    predicted_length: int = field(init=False, compare=False)
+    priority: int
+    taint: int = field(init=False, compare=False)

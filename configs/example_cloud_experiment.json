@@ -1,4 +1,11 @@
 {
+   "experiment": {
+      "memory_per_job": 25,
+      "cpu_per_job": 25,
+      "number_of_groups": 2,
+      "number_of_jobs_per_group": 1,
+      "scheduler": "fair"
+   },
    "cluster": {
       "orchestrator": {
          "wait_for_clients": true,
