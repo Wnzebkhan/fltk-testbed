@@ -11,8 +11,8 @@ kubectl port-forward -n test fl-extractor 6006:6006
 
 release new version
 ```bash
-DOCKER_BUILDKIT=1 docker build . --tag gcr.io/qpe-lab-325820/fltk
-docker push gcr.io/qpe-lab-325820/fltk
+DOCKER_BUILDKIT=1 docker build . --tag gcr.io/group5fairness/fltk
+docker push gcr.io/group5fairness/fltk
 ```
 
 remove orchestrator

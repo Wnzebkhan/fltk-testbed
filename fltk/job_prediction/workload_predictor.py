@@ -28,7 +28,6 @@ class JobWorkloadPredictor:
             return self.history[closest][1]
 
 
-
     def calc_vector_distance(self, vec_a, vec_b):
         # manhattan or euclidean distance would not work since the difference in magnitude between 2 vector dimensions would mess with the results
         # cosine distance would not work since we care about the magnitude of the vectors

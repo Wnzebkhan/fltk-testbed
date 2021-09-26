@@ -72,7 +72,6 @@ class OrchestratorConfig:
     service: str
     nic: str
 
-
 @dataclass_json
 @dataclass
 class ClientConfig:
