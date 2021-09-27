@@ -48,8 +48,10 @@ class Schedule:
             task.priority = np.random.randint(0, 100)
 
     def fifo_scheduler(self):
-        # TODO
-        pass
+        index = 1
+        for task in self.pending_tasks.queue:
+            task.priority = index
+            index += 1
 
     def fair_scheduler(self):
         # self.taint_free = dict()
