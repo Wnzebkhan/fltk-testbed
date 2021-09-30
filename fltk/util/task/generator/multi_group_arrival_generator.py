@@ -73,8 +73,8 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         self.logger.info(f"2 task for {task_id}")
 
         # parameters.hyper_parameters
-        parameters.system_parameters.executor_memory = f"{(self.__config.experiment.memory_per_job / 100) * 2000}Mi"
-        parameters.system_parameters.executor_cores = f"{(self.__config.experiment.cpu_per_job / 100) * 1000}m"
+        parameters.system_parameters.executor_memory = f"{(self.__config.experiment.memory_per_job / 100) * 32000}Mi"
+        parameters.system_parameters.executor_cores = f"{(self.__config.experiment.cpu_per_job / 100) * 8000}m"
 
         self.logger.info(f"3 task for {task_id}")
 
