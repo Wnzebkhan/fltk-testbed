@@ -1,6 +1,6 @@
 fltk:
     config: cloud_experiment.yaml
 provider:
-    domain: gcr.io
+    domain: localhost:5000
     projectName: group5fairness
     imageName: fltk:latest
