@@ -62,6 +62,10 @@ class Schedule:
         group_delays = self.calculate_group_delays()
 
         for task in self.pending_tasks.queue:
+            if task.group_id not in group_delays:
+                task.priority = (round(time.time() * 1000) - task.created)
+                continue
+
             task.priority = group_delays[task.group_id] + (round(time.time() * 1000) - task.created)
 
     def deploy_tasks(self):
