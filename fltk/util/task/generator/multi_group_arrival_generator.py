@@ -70,32 +70,24 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         job: JobDescription = self.job_dict[task_id]
         parameters: JobClassParameter = choices(job.job_class_parameters, [param.class_probability for param in job.job_class_parameters])[0]
         priority = choices(parameters.priorities, [prio.probability for prio in parameters.priorities], k=1)[0]
-        self.logger.info(f"2 task for {task_id}")
 
         # parameters.hyper_parameters
-        parameters.system_parameters.executor_memory = f"{(self.__config.experiment.memory_per_job / 100) * 2000}Mi"
-        parameters.system_parameters.executor_cores = f"{(self.__config.experiment.cpu_per_job / 100) * 1000}m"
+        parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 2000)}Mi"
+        parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 1000)}m"
 
-        self.logger.info(f"3 task for {task_id}")
-
+        self.logger.info(parameters.system_parameters)
         inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)
         train_task = TrainTask(task_id, parameters, priority)
-        self.logger.info(f"4 task for {task_id}")
 
         # randomly pick a group
         group = np.random.randint(0, self.__config.experiment.number_of_groups)
-        self.logger.info(f"5 task for {task_id}")
 
         if group not in self.jobs_per_group:
             self.jobs_per_group[group] = 0
 
-        x = 0
         while self.jobs_per_group[group] > self.__config.experiment.number_of_jobs_per_group:
             # TODO this can be done smarter
-            self.logger.info(f"5.{x} task for {task_id}")
-            x += 1
             group = np.random.randint(0, self.__config.experiment.number_of_groups)
-        self.logger.info(f"6 task for {task_id}")
 
         group = f"group_{group}"
 
