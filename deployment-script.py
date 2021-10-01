@@ -3,6 +3,7 @@ import json
 import subprocess
 from kubeflow import pytorchjob
 
+#Builds and pushes the container
 def docker_process():
     gcrPath = "gcr.io/group5fairness/fltk"
     ##Prepare to build the dockerimage
@@ -16,6 +17,7 @@ def docker_process():
     subprocess.Popen(commandDockerPush, shell=True, stdout = subprocess.PIPE).communicate()
     print("*********** Script: Succesfuly pushed to {} ***********".format(gcrPath))
 
+#Reads sign table and configures the example_cloud_experiments.json
 def prepare_experiment_file():
     
     ##Translate sign table to appropriate values
@@ -40,6 +42,7 @@ def prepare_experiment_file():
     with open('example_cloud_experiment.json', 'w', encoding='utf-8') as f:
         json.dump(dictionary, f, ensure_ascii=False, indent=4)
 
+#Simply performs the commands from the lab tutorial to kickstart the experiment (excluding extractor installment.)
 def start_experiment():
     
     #Cd to /charts
@@ -50,6 +53,7 @@ def start_experiment():
     subprocess.Popen("helm install orchestrator ./orchestrator --namespace test -f fltk-values.yaml", shell=True, stdout = subprocess.PIPE).communicate()
     print("*********** Script: Finished installing the orchestrator.***********")
 
+#Uses the PyTorch lib to ensure that all pytorchjobs are indeed done. 
 def wait_for_jobs():
     ##using this lib https://github.com/kubeflow/pytorch-operator/tree/master/sdk/python#documentation-for-api-endpoints
     pytorchjob_client = PyTorchJobClient()
@@ -58,6 +62,17 @@ def wait_for_jobs():
     for x in allJobs:
         #It should watch all jobs every 30 seconds, with a timeout of 600 seconds, untill they all reach eiter Succeeded or Failed.
         pytorchjob_client.wait_for_job(x, namespace='test', watch=True,  timeout_seconds=600)
+
+#Saves data locally. Dropbox was being a b*tch.
+def save_data():
+    save_path = '/home'
+    file_name = "test.txt"
+
+    completeName = os.path.join(save_path, file_name)
+    file1 = open(completeName, "w")
+    file1.write("file information")
+    file1.close()
+    print("********Saved file to give path!")
 
 #region sign-table-coefficients
 ## Allocate Values corresponding to sign table in .csv
