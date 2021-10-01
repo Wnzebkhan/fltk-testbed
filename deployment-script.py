@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import subprocess
+from kubeflow import pytorchjob
 
 def docker_process():
     gcrPath = "gcr.io/group5fairness/fltk"
@@ -49,6 +50,15 @@ def start_experiment():
     subprocess.Popen("helm install orchestrator ./orchestrator --namespace test -f fltk-values.yaml", shell=True, stdout = subprocess.PIPE).communicate()
     print("*********** Script: Finished installing the orchestrator.***********")
 
+def wait_for_jobs():
+    ##using this lib https://github.com/kubeflow/pytorch-operator/tree/master/sdk/python#documentation-for-api-endpoints
+    pytorchjob_client = PyTorchJobClient()
+    ##Gets all pytorch jobs in the namespace test (change if we will change the namespace...)
+    allJobs = pytorchjob_client.get(namespace='test')
+    for x in allJobs:
+        #It should watch all jobs every 30 seconds, with a timeout of 600 seconds, untill they all reach eiter Succeeded or Failed.
+        pytorchjob_client.wait_for_job(x, namespace='test', watch=True,  timeout_seconds=600)
+
 #region sign-table-coefficients
 ## Allocate Values corresponding to sign table in .csv
 ## -1 corresponds to index 0
@@ -69,7 +79,7 @@ for index, row in df.iterrows():
     docker_process()
     start_experiment()
     ###########TODO ##########
-    ##waitOrSomething() ##How do we know when we can start pulling data...?
+    wait_for_jobs() ##How do we know when we can start pulling data...?
     ##PullData() ##Where to get it from and how??
     ##SaveData() ##Where to put it?
 
