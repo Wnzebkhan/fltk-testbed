@@ -89,7 +89,7 @@ class Orchestrator(object):
                 task.predicted_length = self.workload_predictor.predict_length(task)
 
                 self.__logger.debug(f"Arrival of: {task}")
-                self.schedule.pending_tasks.put(task)
+                self.schedule.pending_tasks.append(task)
 
             self.schedule.reschedule()
 
@@ -101,6 +101,10 @@ class Orchestrator(object):
             time.sleep(1)
 
         logging.info(f'Experiment completed, currently does not support waiting.')
+
+        with open('/home/statistics.csv', 'a+') as f:
+            f.write(f'{self._config.experiment.scheduler} ; {self._config.experiment.cpu_per_job} ; {self._config.experiment.memory_per_job} ; {self._config.experiment.number_of_groups}  ; {self._config.experiment.number_of_jobs_per_group} ; {self._config.experiment.scheduler} ; {self.schedule.calculate_fairness()} ; {self.schedule.calculate_utilization()}')
+
         self.stop()
         return
 

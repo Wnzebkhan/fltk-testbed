@@ -65,7 +65,6 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         @rtype: Arrival
         """
         self.logger.info(f"Creating task for {task_id}")
-        self.logger.info(f"1 task for {task_id}")
 
         job: JobDescription = self.job_dict[task_id]
         parameters: JobClassParameter = choices(job.job_class_parameters, [param.class_probability for param in job.job_class_parameters])[0]
@@ -73,8 +72,8 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
 
         # parameters.hyper_parameters
 
-        parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 32000)}Mi"
-        parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 8000)}m"
+        parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 1000)}Mi"
+        parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 500)}m"
 
         self.logger.info(parameters.system_parameters)
         inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)

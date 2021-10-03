@@ -272,7 +272,11 @@ class DeploymentBuilder:
             self._buildDescription.tolerations = [
                 V1Toleration(key="fltk.node",
                              operator="Exists",
-                             effect="NoSchedule")]
+                             effect="NoSchedule"),
+                V1Toleration(key="basic.node",
+                             operator="Exists",
+                             effect="NoSchedule")
+            ]
         else:
             self._buildDescription.tolerations = \
                 [V1Toleration(key=key, value=vl, operator=op, effect=effect) for key, vl, op, effect in tols]
