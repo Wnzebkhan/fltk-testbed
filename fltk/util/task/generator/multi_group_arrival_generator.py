@@ -70,10 +70,8 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         parameters: JobClassParameter = choices(job.job_class_parameters, [param.class_probability for param in job.job_class_parameters])[0]
         priority = choices(parameters.priorities, [prio.probability for prio in parameters.priorities], k=1)[0]
 
-        # parameters.hyper_parameters
-
-        parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 1000)}Mi"
-        parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 500)}m"
+        # parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 10000)}Mi"
+        # parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 3000)}m"
 
         self.logger.info(parameters.system_parameters)
         inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)

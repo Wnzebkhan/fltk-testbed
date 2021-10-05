@@ -275,6 +275,9 @@ class DeploymentBuilder:
                              effect="NoSchedule"),
                 V1Toleration(key="basic.node",
                              operator="Exists",
+                             effect="NoSchedule"),
+                V1Toleration(key="high.pool",
+                             operator="Exists",
                              effect="NoSchedule")
             ]
         else:

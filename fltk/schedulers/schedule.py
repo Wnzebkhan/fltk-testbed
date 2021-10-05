@@ -39,7 +39,7 @@ class Schedule:
         self.history: List[List[Job]] = []
         self.schedule: List[List[ArrivalTask]] = []
         self.pipeline_busy: List[bool] = []
-        self.n_pipelines = min(math.floor(100 / config.experiment.cpu_per_job), math.floor(100 / config.experiment.memory_per_job))
+        self.n_pipelines = config.experiment.pipelines
         for i in range(self.n_pipelines):
             self.history.append([])
             self.schedule.append([])
@@ -140,8 +140,9 @@ class Schedule:
             job = self.__client.get(f"trainjob-{task.id}", namespace=self._config.cluster_config.namespace)
 
             # check the status of the job
-            if 'status' in job and len(job['status']['conditions']) and job['status']['conditions'][-1]['type'].lower() != 'running':
+            if 'status' in job and len(job['status']['conditions']) and (job['status']['conditions'][-1]['type'].lower() == 'succeeded' or job['status']['conditions'][-1]['type'].lower() == 'failed'):
                 # job is done
+                self.__logger.info(f'Job done: {task.id}')
                 self.deployed_tasks.remove(deployed)
                 self.completed_tasks.append(f"trainjob-{task.id}")
                 start_time = job['status']['startTime']

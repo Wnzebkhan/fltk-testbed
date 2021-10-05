@@ -9,12 +9,12 @@
         "systemParameters": {
           "dataParallelism": "1",
           "executorCores": "1000m",
-          "executorMemory": "1000Mi",
+          "executorMemory": "2000Mi",
           "action": "train"
         },
         "hyperParameters": {
           "batchSize": "128",
-          "maxEpoch": "5",
+          "maxEpoch": "1",
           "learningRate": "0.01",
           "learningrateDecay": "0.0002"
         },

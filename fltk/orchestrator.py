@@ -102,7 +102,7 @@ class Orchestrator(object):
 
         logging.info(f'Experiment completed, currently does not support waiting.')
 
-        with open('/home/statistics.csv', 'a+') as f:
+        with open('./logging/statistics.csv', 'a+') as f:
             f.write(f'{self._config.experiment.scheduler} ; {self._config.experiment.cpu_per_job} ; {self._config.experiment.memory_per_job} ; {self._config.experiment.number_of_groups}  ; {self._config.experiment.number_of_jobs_per_group} ; {self._config.experiment.scheduler} ; {self.schedule.calculate_fairness()} ; {self.schedule.calculate_utilization()}')
 
         self.stop()
