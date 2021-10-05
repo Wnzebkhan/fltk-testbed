@@ -1,7 +1,7 @@
+from logging import StrFormatStyle
 import pandas as pd
 import json
 import subprocess
-from kubeflow import pytorchjob
 
 #Builds and pushes the container
 def docker_process():
@@ -55,13 +55,28 @@ def start_experiment():
 
 #Uses the PyTorch lib to ensure that all pytorchjobs are indeed done. 
 def wait_for_jobs():
-    ##using this lib https://github.com/kubeflow/pytorch-operator/tree/master/sdk/python#documentation-for-api-endpoints
-    pytorchjob_client = PyTorchJobClient()
-    ##Gets all pytorch jobs in the namespace test (change if we will change the namespace...)
-    allJobs = pytorchjob_client.get(namespace='test')
-    for x in allJobs:
-        #It should watch all jobs every 30 seconds, with a timeout of 600 seconds, untill they all reach eiter Succeeded or Failed.
-        pytorchjob_client.wait_for_job(x, namespace='test', watch=True,  timeout_seconds=600)
+    print("*********** Script: Started waiting for fl-server to be done... ***********")
+    namespaceCommand = " kubectl config set-context --current --namespace=test"
+    commandCheckFlServer = "kubectl get pods fl-server --no-headers -o custom-columns=\":status.phase\""
+    guard = True
+    while (guard):
+        subprocess.Popen(namespaceCommand, shell=True, stdout = subprocess.PIPE).communicate()
+        process = subprocess.run(commandCheckFlServer, capture_output=True, shell=True)
+        stdout_as_str = process.stdout.decode("utf-8")
+        print(stdout_as_str)
+        ##TODO: I assume that the fl-server is in status Succeeded when it is done. 
+        if "Running" in stdout_as_str: 
+            print("*********** Script: fl-server is still running. Will try again in 60 seconds! ***********")
+            time.sleep(60) #Wait 60 seconds before checking again.
+        elif "Succeeded" in stdout_as_str :
+            print("*********** Script: fl-server done! ***********")
+            guard = False
+            save_data()
+        elif "Failed" in stdout_as_str:
+            print("*********** Script: fl-server failed... :(. Could not save data. ***********")
+            guard = False
+        
+
 
 #Saves data locally. Dropbox was being a b*tch.
 def save_data():
@@ -78,28 +93,28 @@ def save_data():
 ## Allocate Values corresponding to sign table in .csv
 ## -1 corresponds to index 0
 ## 1 corresponds to index 1
-memoryTable = [25, 100,]
-cpuTable = [25, 100]
-nodesTable = [1, 4]
-groupsTable = [2, 8]
-jobsPerGroupTable = [1, 10]
-algorithmTable = ["random", "G5 Algorithm"]
-##print(df)
-#endregion
-df = pd.read_csv("configs/2^k setup.csv", delimiter=';')
-for index, row in df.iterrows():
-    experimentId = row["Experiment"]
-    print("*********** Script: Dealing with {} ***********".format(experimentId))
-    prepare_experiment_file()
-    docker_process()
-    start_experiment()
-    ###########TODO ##########
-    wait_for_jobs() ##How do we know when we can start pulling data...?
-    ##PullData() ##Where to get it from and how??
-    ##SaveData() ##Where to put it?
+# memoryTable = [25, 100,]
+# cpuTable = [25, 100]
+# nodesTable = [1, 4]
+# groupsTable = [2, 8]
+# jobsPerGroupTable = [1, 10]
+# algorithmTable = ["random", "G5 Algorithm"]
+# ##print(df)
+# #endregion
+# df = pd.read_csv("configs/2^k setup.csv", delimiter=';')
+# for index, row in df.iterrows():
+#     experimentId = row["Experiment"]
+#     print("*********** Script: Dealing with {} ***********".format(experimentId))
+#     prepare_experiment_file()
+#     docker_process()
+#     start_experiment()
+#     ###########TODO ##########
+#     wait_for_jobs() ##How do we know when we can start pulling data...?
+#     ##PullData() ##Where to get it from and how??
+#     ##SaveData() ##Where to put it?
 
-    #get out of chart directorydirectory for the next run
-    subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
-    input("Press Enter to move to the next experiment...")
+#     #get out of chart directorydirectory for the next run
+#     subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
+#     input("Press Enter to move to the next experiment...")
 
-
+wait_for_jobs()
