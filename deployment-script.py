@@ -75,8 +75,6 @@ def wait_for_jobs():
         elif "Failed" in stdout_as_str:
             print("*********** Script: fl-server failed... :(. Could not save data. ***********")
             guard = False
-        
-
 
 #Saves data locally. Dropbox was being a b*tch.
 def save_data():
