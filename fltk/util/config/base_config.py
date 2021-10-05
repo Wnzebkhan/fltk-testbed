@@ -68,8 +68,7 @@ class ExecutionConfig:
 @dataclass_json
 @dataclass
 class ExperimentConfig:
-    memory_per_job: int
-    cpu_per_job: int
+    pipelines: int
     number_of_groups: int
     number_of_jobs_per_group: int
     scheduler: str

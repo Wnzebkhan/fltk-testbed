@@ -46,12 +46,19 @@ class JobWorkloadPredictor:
 
     def get_task_vector(self, task: ArrivalTask):
         return [
-            task.param_conf.max_epoch,
-            task.param_conf.bs,
-            task.sys_conf.data_parallelism,
-            task.sys_conf.executor_cores,
+            int(task.param_conf.max_epoch),
+            int(task.param_conf.bs),
+            int(task.sys_conf.data_parallelism),
+            self.cores_to_number(task.sys_conf.executor_cores),
             self.memory_to_number(task.sys_conf.executor_memory)
         ]
+
+    def cores_to_number(self, cores):
+        r = re.compile("([0-9]+)([a-zA-Z]+)")
+        m = r.match(cores)
+        # TODO assumes that we always use "XXXXm"
+        return int(m.group(1))
+
 
     def memory_to_number(self, memory):
         r = re.compile("([0-9]+)([a-zA-Z]+)")

@@ -22,7 +22,5 @@ class ArrivalTask:
     created: int = field(compare=False)
 
     group_id: str = field(compare=False)
-    started: int = field(init=False, compare=False)
-    predicted_length: int = field(init=False, compare=False)
+    predicted_length: int = field(init=False, compare=False, default=-1)
     priority: int
-    taint: int = field(init=False, compare=False)

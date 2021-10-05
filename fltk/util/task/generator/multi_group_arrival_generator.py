@@ -65,20 +65,23 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         @rtype: Arrival
         """
         self.logger.info(f"Creating task for {task_id}")
+
         job: JobDescription = self.job_dict[task_id]
         parameters: JobClassParameter = choices(job.job_class_parameters, [param.class_probability for param in job.job_class_parameters])[0]
         priority = choices(parameters.priorities, [prio.probability for prio in parameters.priorities], k=1)[0]
 
-        # parameters.hyper_parameters
-        parameters.system_parameters.executor_memory = f"{(self.__config.experiment.memory_per_job / 100) * 2000}Mi"
-        parameters.system_parameters.executor_cores = f"{(self.__config.experiment.cpu_per_job / 100) * 1000}m"
+        # parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 10000)}Mi"
+        # parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 3000)}m"
 
-
+        self.logger.info(parameters.system_parameters)
         inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)
         train_task = TrainTask(task_id, parameters, priority)
 
         # randomly pick a group
         group = np.random.randint(0, self.__config.experiment.number_of_groups)
+
+        if group not in self.jobs_per_group:
+            self.jobs_per_group[group] = 0
 
         while self.jobs_per_group[group] > self.__config.experiment.number_of_jobs_per_group:
             # TODO this can be done smarter
