@@ -102,8 +102,20 @@ class Orchestrator(object):
 
         logging.info(f'Experiment completed, currently does not support waiting.')
 
-        with open('./logging/statistics.csv', 'a+') as f:
-            f.write(f'{self._config.experiment.scheduler} ; {self._config.experiment.cpu_per_job} ; {self._config.experiment.memory_per_job} ; {self._config.experiment.number_of_groups}  ; {self._config.experiment.number_of_jobs_per_group} ; {self._config.experiment.scheduler} ; {self.schedule.calculate_fairness()} ; {self.schedule.calculate_utilization()}')
+        # with open('./logging/statistics.csv', 'a+') as f:
+        #     f.write(f'{self._config.experiment.scheduler} ; {self._config.experiment.cpu_per_job} ; {self._config.experiment.memory_per_job} ; {self._config.experiment.number_of_groups}  ; {self._config.experiment.number_of_jobs_per_group} ; {self._config.experiment.scheduler} ; {self.schedule.calculate_fairness()} ; {self.schedule.calculate_utilization()}')
+
+        dpbx = dropbox.Dropbox("x8KMxPF9z50AAAAAAAAAAXrTe1JWjuMJ-vYm8OnFAGJeHfPpy5HndfMrhwnij8os")
+        header = ['scheduler', 'pipeline', 'number_of_groups', 'jobs_per_group', 'fairness', 'utilization']
+        data = [self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization ]
+        #print(dpbx.users_get_current_account()) #Make sure we have access
+        with open('statistics.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            writer.writerow(data)
+        with open('statistics.csv', 'rb') as f2:
+            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization() ), mute = True)
+
 
         self.stop()
         return
