@@ -3,6 +3,7 @@ import time
 import uuid
 from queue import PriorityQueue
 from typing import List
+import dropbox
 
 from kubeflow.pytorchjob import PyTorchJobClient
 from kubeflow.pytorchjob.constants.constants import PYTORCHJOB_GROUP, PYTORCHJOB_VERSION, PYTORCHJOB_PLURAL
@@ -109,11 +110,11 @@ class Orchestrator(object):
         header = ['scheduler', 'pipeline', 'number_of_groups', 'jobs_per_group', 'fairness', 'utilization']
         data = [self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization ]
         #print(dpbx.users_get_current_account()) #Make sure we have access
-        with open('statistics.csv', 'w') as f:
+        with open('./loggings/statistics.csv', 'w') as f:
             writer = csv.writer(f)
             writer.writerow(header)
             writer.writerow(data)
-        with open('statistics.csv', 'rb') as f2:
+        with open('./loggings/statistics.csv', 'rb') as f2:
             dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization() ), mute = True)
 
 
