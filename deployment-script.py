@@ -88,31 +88,29 @@ def save_data():
     print("********Saved file to give path!")
 
 #region sign-table-coefficients
-## Allocate Values corresponding to sign table in .csv
-## -1 corresponds to index 0
-## 1 corresponds to index 1
-# memoryTable = [25, 100,]
-# cpuTable = [25, 100]
-# nodesTable = [1, 4]
-# groupsTable = [2, 8]
-# jobsPerGroupTable = [1, 10]
-# algorithmTable = ["random", "G5 Algorithm"]
-# ##print(df)
-# #endregion
-# df = pd.read_csv("configs/2^k setup.csv", delimiter=';')
-# for index, row in df.iterrows():
-#     experimentId = row["Experiment"]
-#     print("*********** Script: Dealing with {} ***********".format(experimentId))
-#     prepare_experiment_file()
-#     docker_process()
-#     start_experiment()
-#     ###########TODO ##########
-#     wait_for_jobs() ##How do we know when we can start pulling data...?
-#     ##PullData() ##Where to get it from and how??
-#     ##SaveData() ##Where to put it?
+# Allocate Values corresponding to sign table in .csv
+# -1 corresponds to index 0
+# 1 corresponds to index 1
+memoryTable = [25, 100,]
+cpuTable = [25, 100]
+nodesTable = [1, 4]
+groupsTable = [2, 8]
+jobsPerGroupTable = [1, 10]
+algorithmTable = ["random", "G5 Algorithm"]
+##print(df)
+#endregion
+df = pd.read_csv("configs/2^k setup.csv", delimiter=';')
+for index, row in df.iterrows():
+    experimentId = row["Experiment"]
+    print("*********** Script: Dealing with {} ***********".format(experimentId))
+    prepare_experiment_file()
+    docker_process()
+    start_experiment()
+    ###########TODO ##########
+    wait_for_jobs() ##How do we know when we can start pulling data...?
+    ##PullData() ##Where to get it from and how??
+    ##SaveData() ##Where to put it?
 
-#     #get out of chart directorydirectory for the next run
-#     subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
-#     input("Press Enter to move to the next experiment...")
-
-wait_for_jobs()
+    #get out of chart directorydirectory for the next run
+    subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
+    input("Press Enter to move to the next experiment...")
