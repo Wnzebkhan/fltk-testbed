@@ -24,7 +24,7 @@ def prepare_experiment_file():
     nodesValue = nodesTable[0] if (row["# of nodes"] < 0) else nodesTable[1]
     groupsValue = groupsTable[0] if (row["# of groups"] < 0) else groupsTable[1]
     jobsPerGroupValue = jobsPerGroupTable[0] if (row["Jobs per group"] < 0) else jobsPerGroupTable[1]
-    pipelineValue = pipelineTable[0] if (row["Algorithm"] < 0) else pipelineTable[1]
+    pipelineValue = pipelineTable[0] if (row[" # of pipelines"] < 0) else pipelineTable[1]
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
@@ -35,7 +35,7 @@ def prepare_experiment_file():
     dictionary["experiment"]["pipelines"] = pipelineValue
 
     ##Write the dictionary as a json back to the file immidiately. 
-    with open('example_cloud_experiment.json', 'w', encoding='utf-8') as f:
+    with open('configs/example_cloud_experiment.json', 'w', encoding='utf-8') as f:
         json.dump(dictionary, f, ensure_ascii=False, indent=4)
 
 #Simply performs the commands from the lab tutorial to kickstart the experiment (excluding extractor installment.)
@@ -98,13 +98,13 @@ for index, row in df.iterrows():
     experimentId = row["Experiment"]
     print("*********** Script: Dealing with {} ***********".format(experimentId))
     prepare_experiment_file()
-    docker_process()
-    start_experiment()
+    #docker_process()
+    #start_experiment()
     ###########TODO ##########
-    wait_for_jobs() ##How do we know when we can start pulling data...?
+    ##wait_for_jobs() ##How do we know when we can start pulling data...?
     ##PullData() ##Where to get it from and how??
     ##SaveData() ##Where to put it?
 
     #get out of chart directorydirectory for the next run
-    subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
+    #subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
     input("Press Enter to move to the next experiment...")
