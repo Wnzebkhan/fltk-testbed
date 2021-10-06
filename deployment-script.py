@@ -24,7 +24,7 @@ def prepare_experiment_file():
     nodesValue = nodesTable[0] if (row["# of nodes"] < 0) else nodesTable[1]
     groupsValue = groupsTable[0] if (row["# of groups"] < 0) else groupsTable[1]
     jobsPerGroupValue = jobsPerGroupTable[0] if (row["Jobs per group"] < 0) else jobsPerGroupTable[1]
-    pipelineValue = pipelineTable[0] if (row[" # of pipelines"] < 0) else pipelineTable[1]
+    pipelineValue = pipelineTable[0] if (row["# of pipelines"] < 0) else pipelineTable[1]
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
@@ -93,7 +93,8 @@ jobsPerGroupTable = [1, 10]
 pipelineTable = [1, 4]
 ##print(df)
 #endregion
-df = pd.read_csv("configs/2^k setup.csv", delimiter=';')
+df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
+print(df)
 for index, row in df.iterrows():
     experimentId = row["Experiment"]
     print("*********** Script: Dealing with {} ***********".format(experimentId))
