@@ -72,6 +72,7 @@ class ExperimentConfig:
     number_of_groups: int
     number_of_jobs_per_group: int
     scheduler: str
+    static: bool
 
 
 @dataclass_json

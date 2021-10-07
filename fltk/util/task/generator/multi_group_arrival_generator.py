@@ -26,7 +26,6 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         super(MultiGroupArrivalGenerator, self).__init__(custom_config or self.__default_config)
         self.__config = config
         self.load_config()
-        self.jobs_per_group = dict()
 
     def set_logger(self, name: str = None):
         """
@@ -51,10 +50,10 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         parser = ExperimentParser(config_path=alternative_path or self.configuration_path)
         experiment_descriptions = parser.parse()
         self.job_dict = {}
-        total_jobs = self.__config.experiment.number_of_jobs_per_group * self.__config.experiment.number_of_groups
-        for i in range(total_jobs):
-            random_experiment_description = experiment_descriptions[np.random.randint(0, len(experiment_descriptions))]
-            self.job_dict[f'train_job_{i}'] = random_experiment_description
+
+        for g in range(self.__config.experiment.number_of_groups):
+            for j in range(self.__config.experiment.number_of_jobs_per_group):
+                self.job_dict[f'train_job_{g}_{j}'] = experiment_descriptions[g]
 
     def generate_arrival(self, task_id: str) -> Arrival:
         """
@@ -70,22 +69,15 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         parameters: JobClassParameter = choices(job.job_class_parameters, [param.class_probability for param in job.job_class_parameters])[0]
         priority = choices(parameters.priorities, [prio.probability for prio in parameters.priorities], k=1)[0]
 
-        # parameters.system_parameters.executor_memory = f"{round((self.__config.experiment.memory_per_job / 100) * 10000)}Mi"
-        # parameters.system_parameters.executor_cores = f"{round((self.__config.experiment.cpu_per_job / 100) * 3000)}m"
+        if self.__config.experiment.static:
+            job_number = int(task_id.split("_")[3])
 
-        self.logger.info(parameters.system_parameters)
-        inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)
+            inter_arrival_ticks = [0, 30, 24, 40, 34, 27, 30, 44, 34][job_number]
+        else:
+            inter_arrival_ticks = np.random.poisson(lam=job.arrival_statistic)
         train_task = TrainTask(task_id, parameters, priority)
 
-        # randomly pick a group
-        group = np.random.randint(0, self.__config.experiment.number_of_groups)
-
-        if group not in self.jobs_per_group:
-            self.jobs_per_group[group] = 0
-
-        while self.jobs_per_group[group] > self.__config.experiment.number_of_jobs_per_group:
-            # TODO this can be done smarter
-            group = np.random.randint(0, self.__config.experiment.number_of_groups)
+        group = task_id.split("_")[2]
 
         group = f"group_{group}"
 
@@ -122,10 +114,14 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
         np.random.seed(42)
         self.start_time = time.time()
         self.logger.info("Populating tick lists with initial arrivals")
-        for task_id in self.job_dict.keys():
+        # schedule first job of each group
+        for g in range(self.__config.experiment.number_of_groups):
+            task_id = f'train_job_{g}_{0}'
+
             new_arrival: Arrival = self.generate_arrival(task_id)
             self._tick_list.append(new_arrival)
-            self.logger.info(f"Arrival {new_arrival} arrives at {new_arrival.ticks} seconds")
+            self.logger.info(f"Arrival {task_id} arrives at {new_arrival.ticks} seconds")
+
         event = multiprocessing.Event()
         while self._alive and time.time() - self.start_time < duration:
             save_time = time.time()
@@ -135,9 +131,16 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
                 entry.ticks -= self._decrement
                 if entry.ticks <= 0:
                     self.arrivals.put(entry)
-                    new_arrival = self.generate_arrival(entry.task_id)
+                    group = entry.task_id.split("_")[2]
+                    job = int(entry.task_id.split("_")[3]) + 1
+                    new_task_id = f'train_job_{group}_{job}'
+
+                    if job >= self.__config.experiment.number_of_jobs_per_group:
+                        continue
+
+                    new_arrival = self.generate_arrival(new_task_id)
                     new_scheduled.append(new_arrival)
-                    self.logger.info(f"Arrival {new_arrival} arrives at {new_arrival.ticks} seconds")
+                    self.logger.info(f"Arrival {new_task_id} arrives at {new_arrival.ticks} seconds")
                 else:
                     new_scheduled.append(entry)
             self._tick_list = new_scheduled

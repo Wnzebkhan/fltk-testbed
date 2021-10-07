@@ -2,8 +2,9 @@
    "experiment": {
       "pipelines": 3,
       "number_of_groups": 2,
-      "number_of_jobs_per_group": 1,
-      "scheduler": "fair"
+      "number_of_jobs_per_group": 3,
+      "scheduler": "fair",
+      "static": true
    },
    "cluster": {
       "orchestrator": {
