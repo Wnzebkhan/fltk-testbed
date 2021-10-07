@@ -29,8 +29,7 @@ class Schedule:
         self.__client = client
         self._config = config
         self.workload_predictor = workload_predictor
-        self.start_time = 0
-        self.end_time = 0
+        self.start_time = round(time.time() * 1000)
 
         self.pending_tasks: List[ArrivalTask] = []
         self.deployed_tasks: List[Tuple[int, ArrivalTask]] = []
@@ -49,17 +48,6 @@ class Schedule:
 
     def reschedule(self):
         self.schedule = [[] for _ in range(self.n_pipelines)]
-
-        # to be sure filter out jobs that have already been deployed
-        for task in self.pending_tasks:
-            if f"trainjob-{task.id}" in self.completed_tasks:
-                self.pending_tasks.remove(task)
-                continue
-
-            for (delay, deployed) in self.deployed_tasks:
-                if deployed.id == task.id:
-                    self.pending_tasks.remove(task)
-                    break
 
         if self._config.experiment.scheduler == "random":
             self.random_scheduler()
@@ -114,13 +102,16 @@ class Schedule:
             # if there is stuff scheduled in this pipe and it is not busy we deploy the job
             if len(pipe) != 0 and not self.pipeline_busy[i]:
                 first = pipe.pop()
-                self.pending_tasks.remove(first)
 
-                self.__logger.info(f"Scheduling arrival of Arrival: {first.id}")
+                for x, task in enumerate(self.pending_tasks):
+                    if task.id == first.id:
+                        del self.pending_tasks[x]
+
+                self.__logger.info(f"Scheduling arrival of Arrival: {first.task_id} -> {first.id}")
                 job_to_start = construct_job(self._config, first)
 
                 # Hack to overcome limitation of KubeFlow version (Made for older version of Kubernetes)
-                self.__logger.info(f"Deploying on cluster: {first.id}")
+                self.__logger.info(f"Deploying on cluster: {first.task_id} -> {first.id}")
 
                 self.__client.create(job_to_start, namespace=self._config.cluster_config.namespace)
 
@@ -159,7 +150,7 @@ class Schedule:
                 self.pipeline_busy[pipe] = False
 
     def calculate_utilization(self):
-        total_time = self.end_time - self.start_time
+        total_time = round(time.time() * 1000) - self.start_time
         average_utilization = 0
         for pipeline in self.history:
             busy_time = 0
@@ -195,8 +186,10 @@ class Schedule:
 
         # calculate delays in current pipeline
         for i, pipeline in enumerate(self.schedule):
+            start_next = 0
             # calculate the moment the previous job will likely end
-            start_next = self.history[i][-1].started + self.history[i][-1].busy_time
+            if len(self.history[i]):
+                start_next = self.history[i][-1].started + self.history[i][-1].busy_time
             for job in pipeline:
                 if job.group_id not in group_delays:
                     group_delays[job.group_id] = 0

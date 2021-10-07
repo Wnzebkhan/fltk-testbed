@@ -68,6 +68,7 @@ class ExecutionConfig:
 @dataclass_json
 @dataclass
 class ExperimentConfig:
+    nodes: int
     pipelines: int
     number_of_groups: int
     number_of_jobs_per_group: int

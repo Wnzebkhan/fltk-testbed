@@ -21,6 +21,7 @@ class ArrivalTask:
     param_conf: HyperParameters = field(compare=False)
     created: int = field(compare=False)
 
+    task_id: str = field(compare=False)
     group_id: str = field(compare=False)
-    predicted_length: int = field(init=False, compare=False, default=-1)
+    predicted_length: int = field(compare=False)
     priority: int

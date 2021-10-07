@@ -144,6 +144,9 @@ class MultiGroupArrivalGenerator(ArrivalGenerator):
                 else:
                     new_scheduled.append(entry)
             self._tick_list = new_scheduled
+
+            if len(new_scheduled) == 0:
+                self._alive = False
             # Correct for time drift between execution, otherwise drift adds up, and arrivals don't generate correctly
             correction_time = time.time() - save_time
             event.wait(timeout=self._decrement - correction_time)

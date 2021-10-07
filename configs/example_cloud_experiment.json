@@ -1,8 +1,9 @@
 {
     "experiment": {
-        "pipelines": 1,
-        "number_of_groups": 2,
-        "number_of_jobs_per_group": 1,
+        "nodes": 2,
+        "pipelines": 4,
+        "number_of_groups": 8,
+        "number_of_jobs_per_group": 9,
         "scheduler": "fair",
         "static": true
     },

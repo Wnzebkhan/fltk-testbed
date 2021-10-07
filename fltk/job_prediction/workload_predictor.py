@@ -1,6 +1,7 @@
 import uuid
 
 from fltk.util.task.config.parameter import SystemParameters, HyperParameters
+from fltk.util.task.generator.arrival_generator import Arrival
 from fltk.util.task.task import ArrivalTask
 import re
 
@@ -9,7 +10,7 @@ class JobWorkloadPredictor:
     def __init__(self):
         self.history = dict()
 
-    def predict_length(self, task: ArrivalTask):
+    def predict_length(self, task: Arrival):
         task_vector = self.get_task_vector(task)
 
         if len(self.history.keys()) == 0:
@@ -40,17 +41,26 @@ class JobWorkloadPredictor:
         return sum
 
     def feedback(self, task: ArrivalTask, actual_length: int):
-        task_vector = self.get_task_vector(task)
+        task_vector = self.get_task_vector_from_arrival_task(task)
 
         self.history[task.id] = (task_vector, actual_length)
 
-    def get_task_vector(self, task: ArrivalTask):
+    def get_task_vector_from_arrival_task(self, task: ArrivalTask):
         return [
             int(task.param_conf.max_epoch),
             int(task.param_conf.bs),
             int(task.sys_conf.data_parallelism),
             self.cores_to_number(task.sys_conf.executor_cores),
             self.memory_to_number(task.sys_conf.executor_memory)
+        ]
+
+    def get_task_vector(self, task: Arrival):
+        return [
+            int(task.get_parameter_config().max_epoch),
+            int(task.get_parameter_config().bs),
+            int(task.get_system_config().data_parallelism),
+            self.cores_to_number(task.get_system_config().executor_cores),
+            self.memory_to_number(task.get_system_config().executor_memory)
         ]
 
     def cores_to_number(self, cores):

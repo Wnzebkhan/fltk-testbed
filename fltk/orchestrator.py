@@ -85,12 +85,11 @@ class Orchestrator(object):
                                    sys_conf=arrival.get_system_config(),
                                    param_conf=arrival.get_parameter_config(),
                                    group_id=arrival.group_id,
-                                   created=round(time.time() * 1000))
+                                   task_id=arrival.task_id,
+                                   created=round(time.time() * 1000),
+                                   predicted_length=self.workload_predictor.predict_length(arrival))
 
-                # Set the predicted length
-                task.predicted_length = self.workload_predictor.predict_length(task)
-
-                self.__logger.debug(f"Arrival of: {task}")
+                self.__logger.info(f"Arrival of: {task.task_id} {unique_identifier}")
                 self.schedule.pending_tasks.append(task)
 
             self.schedule.reschedule()
@@ -99,8 +98,12 @@ class Orchestrator(object):
 
             self.schedule.check_completed()
 
+            if len(self.schedule.completed_tasks) == self._config.experiment.number_of_groups * self._config.experiment.number_of_jobs_per_group:
+                self._alive = False
+
             self.__logger.debug("Still alive...")
             time.sleep(1)
+
 
         logging.info(f'Experiment completed, currently does not support waiting.')
 
@@ -111,12 +114,12 @@ class Orchestrator(object):
         header = ['scheduler', 'pipeline', 'number_of_groups', 'jobs_per_group', 'fairness', 'utilization']
         data = [self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization ]
         #print(dpbx.users_get_current_account()) #Make sure we have access
-        with open('./loggings/statistics.csv', 'w') as f:
+        with open('./statistics.csv', 'w+') as f:
             writer = csv.writer(f)
             writer.writerow(header)
             writer.writerow(data)
-        with open('./loggings/statistics.csv', 'rb') as f2:
-            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization() ), mute = True)
+        with open('./statistics.csv', 'rb') as f2:
+            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization()), mute = True)
 
 
         self.stop()
