@@ -21,25 +21,21 @@ def docker_process():
 def prepare_experiment_file():
     
     ##Translate sign table to appropriate values
-    memoryValue = memoryTable[0] if (row["perc memory"] < 0) else memoryTable[1]
-    cpuValue = cpuTable[0] if (row["perc cpu"] < 0) else cpuTable[1]
     nodesValue = nodesTable[0] if (row["# of nodes"] < 0) else nodesTable[1]
     groupsValue = groupsTable[0] if (row["# of groups"] < 0) else groupsTable[1]
     jobsPerGroupValue = jobsPerGroupTable[0] if (row["Jobs per group"] < 0) else jobsPerGroupTable[1]
-    algorithmValue = algorithmTable[0] if (row["Algorithm"] < 0) else algorithmTable[1]
+    pipelineValue = pipelineTable[0] if (row["# of pipelines"] < 0) else pipelineTable[1]
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
     dictionary = json.load(f)
     #Alter dictionary
-    dictionary["experiment"]["memory_per_job"] = memoryValue
-    dictionary["experiment"]["cpu_per_job"] = cpuValue
     dictionary["experiment"]["number_of_groups"] = groupsValue
     dictionary["experiment"]["number_of_jobs_per_group"] = jobsPerGroupValue
-    dictionary["experiment"]["scheduler"] = algorithmValue
+    dictionary["experiment"]["pipelines"] = pipelineValue
 
     ##Write the dictionary as a json back to the file immidiately. 
-    with open('example_cloud_experiment.json', 'w', encoding='utf-8') as f:
+    with open('configs/example_cloud_experiment.json', 'w', encoding='utf-8') as f:
         json.dump(dictionary, f, ensure_ascii=False, indent=4)
 
 #Simply performs the commands from the lab tutorial to kickstart the experiment (excluding extractor installment.)
@@ -88,31 +84,28 @@ def save_data():
     print("********Saved file to give path!")
 
 #region sign-table-coefficients
-## Allocate Values corresponding to sign table in .csv
-## -1 corresponds to index 0
-## 1 corresponds to index 1
-# memoryTable = [25, 100,]
-# cpuTable = [25, 100]
-# nodesTable = [1, 4]
-# groupsTable = [2, 8]
-# jobsPerGroupTable = [1, 10]
-# algorithmTable = ["random", "G5 Algorithm"]
-# ##print(df)
-# #endregion
-# df = pd.read_csv("configs/2^k setup.csv", delimiter=';')
-# for index, row in df.iterrows():
-#     experimentId = row["Experiment"]
-#     print("*********** Script: Dealing with {} ***********".format(experimentId))
-#     prepare_experiment_file()
-#     docker_process()
-#     start_experiment()
-#     ###########TODO ##########
-#     wait_for_jobs() ##How do we know when we can start pulling data...?
-#     ##PullData() ##Where to get it from and how??
-#     ##SaveData() ##Where to put it?
+# Allocate Values corresponding to sign table in .csv
+# -1 corresponds to index 0
+# 1 corresponds to index 1
+nodesTable = [1, 4]
+groupsTable = [2, 8]
+jobsPerGroupTable = [1, 10]
+pipelineTable = [1, 4]
+##print(df)
+#endregion
+df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
+print(df)
+for index, row in df.iterrows():
+    experimentId = row["Experiment"]
+    print("*********** Script: Dealing with {} ***********".format(experimentId))
+    prepare_experiment_file()
+    #docker_process()
+    #start_experiment()
+    ###########TODO ##########
+    ##wait_for_jobs() ##How do we know when we can start pulling data...?
+    ##PullData() ##Where to get it from and how??
+    ##SaveData() ##Where to put it?
 
-#     #get out of chart directorydirectory for the next run
-#     subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
-#     input("Press Enter to move to the next experiment...")
-
-wait_for_jobs()
+    #get out of chart directorydirectory for the next run
+    #subprocess.Popen("cd ..", shell=True, stdout = subprocess.PIPE).communicate()
+    input("Press Enter to move to the next experiment...")
