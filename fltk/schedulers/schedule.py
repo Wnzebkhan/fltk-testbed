@@ -185,7 +185,6 @@ class Schedule:
         return std / len(group_delays.values())
 
     def calculate_group_delays(self):
-        # TODO should also keep track of the delays of the current schedule (not only of the history)
         group_delays = dict()
         for pipeline in self.history:
             for job in pipeline:
@@ -193,4 +192,16 @@ class Schedule:
                     group_delays[job.group_id] = 0
                 # calculate the delay
                 group_delays[job.group_id] += job.started - job.created
+
+        # calculate delays in current pipeline
+        for i, pipeline in enumerate(self.schedule):
+            # calculate the moment the previous job will likely end
+            start_next = self.history[i][-1].started + self.history[i][-1].busy_time
+            for job in pipeline:
+                if job.group_id not in group_delays:
+                    group_delays[job.group_id] = 0
+                # calculate the delay which is the predicted start time of this job which is the moment the previous job will likely end
+                group_delays[job.group_id] += start_next - job.created
+                # Add the predicted length to the start_next such that delay of the next job is also correct
+                start_next += job.predicted_length
         return group_delays

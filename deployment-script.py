@@ -1,3 +1,5 @@
+import time
+import os
 from logging import StrFormatStyle
 import pandas as pd
 import json
@@ -19,12 +21,15 @@ def docker_process():
 
 #Reads sign table and configures the example_cloud_experiments.json
 def prepare_experiment_file():
-    
+    groupsTable = [2, 8]
+    jobsPerGroupTable = [3, 9]
+    pipelineTable = [1, 4]
+
     ##Translate sign table to appropriate values
-    nodesValue = nodesTable[0] if (row["# of nodes"] < 0) else nodesTable[1]
     groupsValue = groupsTable[0] if (row["# of groups"] < 0) else groupsTable[1]
     jobsPerGroupValue = jobsPerGroupTable[0] if (row["Jobs per group"] < 0) else jobsPerGroupTable[1]
     pipelineValue = pipelineTable[0] if (row["# of pipelines"] < 0) else pipelineTable[1]
+
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
@@ -87,10 +92,7 @@ def save_data():
 # Allocate Values corresponding to sign table in .csv
 # -1 corresponds to index 0
 # 1 corresponds to index 1
-nodesTable = [1, 4]
-groupsTable = [2, 8]
-jobsPerGroupTable = [1, 10]
-pipelineTable = [1, 4]
+
 ##print(df)
 #endregion
 df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
