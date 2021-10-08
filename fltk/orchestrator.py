@@ -119,7 +119,7 @@ class Orchestrator(object):
             writer.writerow(header)
             writer.writerow(data)
         with open('./statistics.csv', 'rb') as f2:
-            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization()), mute = True)
+            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self._config.experiment.repetition, self.schedule.calculate_fairness(), self.schedule.calculate_utilization()), mute = True)
 
 
         self.stop()

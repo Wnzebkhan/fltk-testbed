@@ -6,7 +6,7 @@ import json
 import subprocess
 
 
-nodes = 2
+nodes = 4
 
 # Builds and pushes the container
 def docker_process():
@@ -23,7 +23,7 @@ def docker_process():
 
 
 # Reads sign table and configures the example_cloud_experiments.json
-def prepare_experiment_file(row):
+def prepare_experiment_file(row, r):
     groupsTable = [2, 8]
     jobsPerGroupTable = [3, 9]
     pipelineTable = [1, 4]
@@ -38,6 +38,8 @@ def prepare_experiment_file(row):
     # returns JSON object as a dictionary
     dictionary = json.load(f)
     # Alter dictionary
+
+    dictionary["experiment"]["repetition"] = r
     dictionary["experiment"]["static"] = True
     dictionary["experiment"]["scheduler"] = "fair"
     dictionary["experiment"]["nodes"] = nodes
@@ -111,15 +113,16 @@ def main():
 
     df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
     for index, row in df.iterrows():
-        experimentId = row["Experiment"]
-        print("Script: Dealing with {}".format(experimentId))
-        prepare_experiment_file(row)
-        docker_process()
-        start_experiment()
-        wait_for_jobs()
-        # input("Press Enter to move to the next experiment...")
+        for r in range(5):
+            experimentId = row["Experiment"]
+            print("Script: Dealing with {}".format(experimentId))
+            prepare_experiment_file(row, r)
+            docker_process()
+            start_experiment()
+            wait_for_jobs()
+            # input("Press Enter to move to the next experiment...")
 
-        end_experiment()
+            end_experiment()
 
 
 

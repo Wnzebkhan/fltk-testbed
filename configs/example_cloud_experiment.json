@@ -1,11 +1,12 @@
 {
     "experiment": {
-        "nodes": 2,
-        "pipelines": 4,
-        "number_of_groups": 8,
+        "nodes": 4,
+        "pipelines": 1,
+        "number_of_groups": 2,
         "number_of_jobs_per_group": 9,
         "scheduler": "fair",
-        "static": true
+        "static": true,
+        "repetition": 4
     },
     "cluster": {
         "orchestrator": {
