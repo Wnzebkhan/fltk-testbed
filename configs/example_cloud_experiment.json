@@ -3,10 +3,10 @@
         "nodes": 4,
         "pipelines": 1,
         "number_of_groups": 2,
-        "number_of_jobs_per_group": 9,
+        "number_of_jobs_per_group": 3,
         "scheduler": "fair",
         "static": true,
-        "repetition": 4
+        "repetition": 0
     },
     "cluster": {
         "orchestrator": {

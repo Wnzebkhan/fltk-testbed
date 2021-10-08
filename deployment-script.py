@@ -6,7 +6,7 @@ import json
 import subprocess
 
 
-nodes = 4
+nodes = 1
 
 # Builds and pushes the container
 def docker_process():
