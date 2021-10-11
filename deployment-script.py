@@ -1,6 +1,4 @@
 import time
-import os
-from logging import StrFormatStyle
 import pandas as pd
 import json
 import subprocess
@@ -33,6 +31,7 @@ def prepare_experiment_file(row, r):
     jobsPerGroupValue = jobsPerGroupTable[0] if (row["Jobs per group"] < 0) else jobsPerGroupTable[1]
     pipelineValue = pipelineTable[0] if (row["# of pipelines"] < 0) else pipelineTable[1]
 
+    print(pipelineValue, groupsValue, jobsPerGroupValue, r)
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
@@ -113,6 +112,8 @@ def main():
 
     df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
     for index, row in df.iterrows():
+        if index < 7:
+            continue
         for r in range(5):
             experimentId = row["Experiment"]
             print("Script: Dealing with {}".format(experimentId))

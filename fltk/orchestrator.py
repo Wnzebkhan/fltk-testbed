@@ -111,8 +111,8 @@ class Orchestrator(object):
         #     f.write(f'{self._config.experiment.scheduler} ; {self._config.experiment.cpu_per_job} ; {self._config.experiment.memory_per_job} ; {self._config.experiment.number_of_groups}  ; {self._config.experiment.number_of_jobs_per_group} ; {self._config.experiment.scheduler} ; {self.schedule.calculate_fairness()} ; {self.schedule.calculate_utilization()}')
 
         dpbx = dropbox.Dropbox("x8KMxPF9z50AAAAAAAAAAXrTe1JWjuMJ-vYm8OnFAGJeHfPpy5HndfMrhwnij8os")
-        header = ['scheduler', 'pipeline', 'number_of_groups', 'jobs_per_group', 'fairness', 'utilization']
-        data = [self._config.experiment.scheduler, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self.schedule.calculate_fairness(), self.schedule.calculate_utilization ]
+        header = ['scheduler', 'static', 'nodes', 'pipeline', 'number_of_groups', 'jobs_per_group', 'trial', 'fairness', 'utilization']
+        data = [self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self._config.experiment.repetition, self.schedule.calculate_fairness(), self.schedule.calculate_utilization()]
         #print(dpbx.users_get_current_account()) #Make sure we have access
         with open('./statistics.csv', 'w+') as f:
             writer = csv.writer(f)
