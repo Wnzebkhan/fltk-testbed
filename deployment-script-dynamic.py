@@ -6,6 +6,8 @@ import subprocess
 
 nodes = 4
 jobs = 9
+pipelines = 4
+groups = 8
 
 # Builds and pushes the container
 def docker_process():
@@ -22,8 +24,8 @@ def docker_process():
 
 
 # Reads sign table and configures the example_cloud_experiments.json
-def prepare_experiment_file(groups, pipelines, r):
-    print(nodes, jobs, pipelines, groups, r)
+def prepare_experiment_file(sche, r):
+    print(sche, r)
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
@@ -31,8 +33,8 @@ def prepare_experiment_file(groups, pipelines, r):
     # Alter dictionary
 
     dictionary["experiment"]["repetition"] = r
-    dictionary["experiment"]["static"] = True
-    dictionary["experiment"]["scheduler"] = "fair"
+    dictionary["experiment"]["static"] = False
+    dictionary["experiment"]["scheduler"] = sche
     dictionary["experiment"]["nodes"] = nodes
     dictionary["experiment"]["number_of_groups"] = groups
     dictionary["experiment"]["number_of_jobs_per_group"] = jobs
@@ -102,26 +104,18 @@ def main():
     # Make sure the orchestrator gets killed
     end_experiment()
 
-    df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
-    groupsTable = [2, 4, 8]
-    pipelineTable = [1, 2, 4]
-
     count = 0
-    for g in groupsTable:
-        for p in pipelineTable:
-            if count < 5:
-                count += 1
-                continue
-            for r in range(5):
-                print("Script: Dealing with {}".format(count))
-                prepare_experiment_file(g, p, r)
-                docker_process()
-                start_experiment()
-                wait_for_jobs()
-                # input("Press Enter to move to the next experiment...")
+    for sche in ['fair', 'fifo', 'random']:
+        for r in range(10, 20):
+            print("Script: Dealing with {}".format(count))
+            prepare_experiment_file(sche, r)
+            docker_process()
+            start_experiment()
+            wait_for_jobs()
+            # input("Press Enter to move to the next experiment...")
 
-                end_experiment()
-            count += 1
+            end_experiment()
+        count += 1
 
 
 

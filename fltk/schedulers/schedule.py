@@ -123,6 +123,8 @@ class Schedule:
                         round(time.time() * 1000), # job started now
                         first.predicted_length)
                 )
+
+                self.__logger.info(f"{first.id} :::: {first.created} -> {round(time.time() * 1000)}, diff = {round(time.time() * 1000) - first.created}")
                 self.pipeline_busy[i] = True
 
     def check_completed(self):
@@ -140,7 +142,7 @@ class Schedule:
                 end_time = job['status']['conditions'][-1]['lastTransitionTime']
                 start_time = parser.parse(start_time).timestamp()
                 end_time = parser.parse(end_time).timestamp()
-                length = end_time - start_time
+                length = (end_time - start_time) * 1000 # convert to ms
 
                 # update the workload predictor with the timings
                 self.workload_predictor.feedback(task, int(length))
@@ -167,13 +169,19 @@ class Schedule:
         @return:
         """
         group_delays = self.calculate_group_delays()
+        delay_in_secs = dict()
 
-        avg = sum(group_delays.values()) / len(group_delays.values())
+        for key, value in group_delays.items():
+            delay_in_secs[key] = value / 1000
+
+        avg = sum(delay_in_secs.values()) / len(delay_in_secs.values())
+        self.__logger.info(f"Average delays: {avg}")
         std = 0
-        for delay in group_delays.values():
+        for delay in delay_in_secs.values():
             std += (delay - avg) ** 2
+        self.__logger.info(f"Standard deviation delays: {(std / len(delay_in_secs.values()))}")
 
-        return std / len(group_delays.values())
+        return std / len(delay_in_secs.values())
 
     def calculate_group_delays(self):
         group_delays = dict()

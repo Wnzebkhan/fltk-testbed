@@ -4,8 +4,7 @@ import json
 import subprocess
 
 
-nodes = 4
-jobs = 9
+nodes = 1
 
 # Builds and pushes the container
 def docker_process():
@@ -22,8 +21,17 @@ def docker_process():
 
 
 # Reads sign table and configures the example_cloud_experiments.json
-def prepare_experiment_file(groups, pipelines, r):
-    print(nodes, jobs, pipelines, groups, r)
+def prepare_experiment_file(row, r):
+    groupsTable = [2, 8]
+    jobsPerGroupTable = [3, 9]
+    pipelineTable = [1, 4]
+
+    # Translate sign table to appropriate values
+    groupsValue = groupsTable[0] if (row["# of groups"] < 0) else groupsTable[1]
+    jobsPerGroupValue = jobsPerGroupTable[0] if (row["Jobs per group"] < 0) else jobsPerGroupTable[1]
+    pipelineValue = pipelineTable[0] if (row["# of pipelines"] < 0) else pipelineTable[1]
+
+    print(pipelineValue, groupsValue, jobsPerGroupValue, r)
     # Opening JSON file
     f = open('configs/example_cloud_experiment.json',)
     # returns JSON object as a dictionary
@@ -34,9 +42,9 @@ def prepare_experiment_file(groups, pipelines, r):
     dictionary["experiment"]["static"] = True
     dictionary["experiment"]["scheduler"] = "fair"
     dictionary["experiment"]["nodes"] = nodes
-    dictionary["experiment"]["number_of_groups"] = groups
-    dictionary["experiment"]["number_of_jobs_per_group"] = jobs
-    dictionary["experiment"]["pipelines"] = pipelines
+    dictionary["experiment"]["number_of_groups"] = groupsValue
+    dictionary["experiment"]["number_of_jobs_per_group"] = jobsPerGroupValue
+    dictionary["experiment"]["pipelines"] = pipelineValue
 
     # Write the dictionary as a json back to the file immidiately.
     with open('configs/example_cloud_experiment.json', 'w', encoding='utf-8') as f:
@@ -103,25 +111,19 @@ def main():
     end_experiment()
 
     df = pd.read_csv("configs/2^ksetup_new.csv", delimiter=';')
-    groupsTable = [2, 4, 8]
-    pipelineTable = [1, 2, 4]
+    for index, row in df.iterrows():
+        if index >= 3:
+            continue
+        for r in range(5):
+            experimentId = row["Experiment"]
+            print("Script: Dealing with {}".format(experimentId))
+            prepare_experiment_file(row, r)
+            docker_process()
+            start_experiment()
+            wait_for_jobs()
+            # input("Press Enter to move to the next experiment...")
 
-    count = 0
-    for g in groupsTable:
-        for p in pipelineTable:
-            if count < 5:
-                count += 1
-                continue
-            for r in range(5):
-                print("Script: Dealing with {}".format(count))
-                prepare_experiment_file(g, p, r)
-                docker_process()
-                start_experiment()
-                wait_for_jobs()
-                # input("Press Enter to move to the next experiment...")
-
-                end_experiment()
-            count += 1
+            end_experiment()
 
 
 

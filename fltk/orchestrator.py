@@ -111,15 +111,15 @@ class Orchestrator(object):
         #     f.write(f'{self._config.experiment.scheduler} ; {self._config.experiment.cpu_per_job} ; {self._config.experiment.memory_per_job} ; {self._config.experiment.number_of_groups}  ; {self._config.experiment.number_of_jobs_per_group} ; {self._config.experiment.scheduler} ; {self.schedule.calculate_fairness()} ; {self.schedule.calculate_utilization()}')
 
         dpbx = dropbox.Dropbox("x8KMxPF9z50AAAAAAAAAAXrTe1JWjuMJ-vYm8OnFAGJeHfPpy5HndfMrhwnij8os")
-        header = ['scheduler', 'static', 'nodes', 'pipeline', 'number_of_groups', 'jobs_per_group', 'trial', 'fairness', 'utilization']
-        data = [self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self._config.experiment.repetition, self.schedule.calculate_fairness(), self.schedule.calculate_utilization()]
+        header = ['scheduler', 'static', 'nodes', 'pipeline', 'number_of_groups', 'jobs_per_group', 'trial', 'fairness', 'utilization', 'norm_fairness', 'norm_utilization']
+        data = [self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self._config.experiment.repetition, self.schedule.calculate_fairness(), self.schedule.calculate_utilization(), (self.schedule.calculate_fairness() / ((self._config.experiment.number_of_groups ** 2) * (self._config.experiment.number_of_jobs_per_group ** 2))), (self.schedule.calculate_utilization() / (self._config.experiment.number_of_groups * self._config.experiment.number_of_jobs_per_group))]
         #print(dpbx.users_get_current_account()) #Make sure we have access
         with open('./statistics.csv', 'w+') as f:
             writer = csv.writer(f)
             writer.writerow(header)
             writer.writerow(data)
         with open('./statistics.csv', 'rb') as f2:
-            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self._config.experiment.repetition, self.schedule.calculate_fairness(), self.schedule.calculate_utilization()), mute = True)
+            dpbx.files_upload(f2.read(), '/{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}.csv'.format(self._config.experiment.scheduler, self._config.experiment.static, self._config.experiment.nodes, self._config.experiment.pipelines, self._config.experiment.number_of_groups,self._config.experiment.number_of_jobs_per_group, self._config.experiment.repetition, self.schedule.calculate_fairness(), self.schedule.calculate_utilization(), (self.schedule.calculate_fairness() / ((self._config.experiment.number_of_groups ** 2) * (self._config.experiment.number_of_jobs_per_group ** 2))), (self.schedule.calculate_utilization() / (self._config.experiment.number_of_groups * self._config.experiment.number_of_jobs_per_group))), mute = True)
 
 
         self.stop()
