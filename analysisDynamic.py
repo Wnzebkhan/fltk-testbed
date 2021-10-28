@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from test import VD_A
 from scipy.stats import wilcoxon
 
-def read_files():
+def read_files(type):
     mypath = "data/dynamic"
     onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
     onlyfiles = sorted(onlyfiles)
@@ -34,8 +34,16 @@ def read_files():
         splitted = f.split("-")
         if splitted[0] not in data:
             data[splitted[0]] = []
-        # data[splitted[0]].append(float(splitted[8]))
-        data[splitted[0]].append(float(splitted[10].split('.csv')[0]))
+
+        if len(data[splitted[0]]) >= 10:
+            continue
+
+        if type == 7 or type == 9:
+            data[splitted[0]].append(1/float(splitted[type]))
+        else:
+            data[splitted[0]].append(float(splitted[type]))
+
+        # data[splitted[0]].append(float(splitted[10].split('.csv')[0]))
 
 
     return data
@@ -56,29 +64,41 @@ def compare_two(data0, data1):
 
 
 def main():
-    data = read_files()
+    data_util = read_files(8)
+    data_fairness = read_files(9)
 
-    for key0, data0 in data.items():
-        for key1, data1 in data.items():
-            if key0 == key1:
-                continue
+    random_data = data_util['random']
+    fifo_data = data_util['fifo']
+    fair_data = data_util['fair']
 
-
-    random_data = data['random']
-    fifo_data = data['fifo']
-    fair_data = data['fair']
+    random_data_fair = data_fairness['random']
+    fifo_data_fair = data_fairness['fifo']
+    fair_data_fair = data_fairness['fair']
 
     # p, a = compare_two(random_data, fifo_data)
-    print(" & ".join(['random', '{:.3f}'.format(np.mean(random_data)), '{:.4f}'.format(np.std(random_data)), '-', '-']))
+    print(" & ".join(['Random', '{:.3f}'.format(np.mean(random_data_fair)), '{:.4f}'.format(np.std(random_data_fair)), '{:.3f}'.format(np.mean(random_data)), '{:.4f}'.format(np.std(random_data))]))
+    print(" & ".join(['FiFo', '{:.3f}'.format(np.mean(fifo_data_fair)), '{:.4f}'.format(np.std(fifo_data_fair)), '{:.3f}'.format(np.mean(fifo_data)), '{:.4f}'.format(np.std(fifo_data))]))
+    print(" & ".join(['Fair', '{:.3f}'.format(np.mean(fair_data_fair)), '{:.4f}'.format(np.std(fair_data_fair)), '{:.3f}'.format(np.mean(fair_data)), '{:.4f}'.format(np.std(fair_data))]))
+    print()
 
     p, a = compare_two(random_data, fifo_data)
-    print(" & ".join(['fifo', '{:.3f}'.format(np.mean(fifo_data)), '{:.4f}'.format(np.std(fifo_data)), p, a, '{:.2f}'.format((np.mean(fifo_data) - np.mean(random_data))/np.mean(random_data))]))
+    print(" & ".join(['Random-FiFo', p, a, '{:.2f}'.format((np.mean(fifo_data) - np.mean(random_data))/np.mean(random_data))]))
 
     p, a = compare_two(random_data, fair_data)
-    print(" & ".join(['fair', '{:.3f}'.format(np.mean(fair_data)), '{:.4f}'.format(np.std(fair_data)), p, a, '{:.2f}'.format((np.mean(fair_data) - np.mean(random_data))/np.mean(random_data))]))
+    print(" & ".join(['Random-Fair', p, a, '{:.2f}'.format((np.mean(fair_data) - np.mean(random_data))/np.mean(random_data))]))
 
     p, a = compare_two(fifo_data, fair_data)
-    print(" & ".join(['fair', '{:.3f}'.format(np.mean(fair_data)), '{:.4f}'.format(np.std(fair_data)), p, a, '{:.2f}'.format((np.mean(fair_data) - np.mean(fifo_data))/np.mean(fifo_data))]))
+    print(" & ".join(['FiFo-Fair', p, a, '{:.2f}'.format((np.mean(fair_data) - np.mean(fifo_data))/np.mean(fifo_data))]))
+
+    print()
+    p, a = compare_two(random_data_fair, fifo_data_fair)
+    print(" & ".join(['Random-FiFo', p, a, '{:.2f}'.format((np.mean(fifo_data_fair) - np.mean(random_data_fair))/np.mean(random_data_fair))]))
+
+    p, a = compare_two(random_data_fair, fair_data_fair)
+    print(" & ".join(['Random-Fair', p, a, '{:.2f}'.format((np.mean(fair_data_fair) - np.mean(random_data_fair))/np.mean(random_data_fair))]))
+
+    p, a = compare_two(fifo_data_fair, fair_data_fair)
+    print(" & ".join(['FiFo-Fair', p, a, '{:.2f}'.format((np.mean(fair_data_fair) - np.mean(fifo_data_fair))/np.mean(fifo_data_fair))]))
 
 if __name__ == '__main__':
     main()

@@ -106,7 +106,7 @@ def main():
 
     count = 0
     for sche in ['fair', 'fifo', 'random']:
-        for r in range(10, 20):
+        for r in range(10):
             print("Script: Dealing with {}".format(count))
             prepare_experiment_file(sche, r)
             docker_process()
@@ -117,6 +117,18 @@ def main():
             end_experiment()
         count += 1
 
+    count = 0
+    for sche in ['fair', 'fifo', 'random']:
+        for r in range(10, 20):
+            print("Script: Dealing with {}".format(count))
+            prepare_experiment_file(sche, r)
+            docker_process()
+            start_experiment()
+            wait_for_jobs()
+            # input("Press Enter to move to the next experiment...")
+
+            end_experiment()
+        count += 1
 
 
 if __name__ == "__main__":

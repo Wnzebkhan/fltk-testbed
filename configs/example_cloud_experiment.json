@@ -4,9 +4,9 @@
         "pipelines": 4,
         "number_of_groups": 8,
         "number_of_jobs_per_group": 9,
-        "scheduler": "fair",
+        "scheduler": "random",
         "static": false,
-        "repetition": 12
+        "repetition": 19
     },
     "cluster": {
         "orchestrator": {
