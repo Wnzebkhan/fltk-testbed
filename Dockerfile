@@ -14,7 +14,7 @@ RUN apt-get update \
   && apt-get install -y curl python3 python3-pip net-tools iproute2
 
 # Add Pre-downloaded models (otherwise needs be run every-time)
-ADD data/ data/
+ADD results/ data/
 
 # Use cache for pip, otherwise we repeatedly pull from repository
 ADD requirements.txt ./

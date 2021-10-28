@@ -130,6 +130,6 @@ dmypy.json
 
 venv
 venv-*
-!data/.gitkeep
+!results/.gitkeep
 output
 .idea
