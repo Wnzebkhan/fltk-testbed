@@ -1,0 +1,2 @@
+scheduler,static,nodes,pipeline,number_of_groups,jobs_per_group,trial,fairness,utilization,norm_fairness,norm_utilization
+fair,True,4,1,2,3,0,15340.061025000005,0.9804222570180017,426.1128062500001,0.1634037095030003
